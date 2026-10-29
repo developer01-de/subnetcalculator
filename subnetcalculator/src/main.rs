@@ -51,3 +51,8 @@ fn parse_prefix(input: &str) -> Result<u8, String> {
         Err("The prefix has to be smaller than 32".to_string())
     }
 }
+
+fn find_broadcast(ip: &Ipv4Addr) {
+    //let broadcast = ip
+
+}
