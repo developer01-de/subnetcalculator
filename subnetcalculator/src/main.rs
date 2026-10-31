@@ -1,7 +1,6 @@
-use std::{error, io};
+use std::io;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
-use ipnet::{IpNet, Ipv4Net, Ipv4Subnets};
 
 
 fn main() {
@@ -14,7 +13,7 @@ fn main() {
         .read_line(&mut given_ip)
         .expect("Failed to read the IP");
 
-    let ipaddress = match parse_ip(given_ip.trim()) {
+    match parse_ip(given_ip.trim()) {
         Ok(ip) => ip,
         Err(err) => {
             println!("{err}");
@@ -29,9 +28,14 @@ fn main() {
         .expect("Failed to read prefix");
 
     match parse_prefix(given_prefix.trim()) {
-        Ok(prefix) => println!("Valid subnetmask: {prefix}!"),
-        Err(err) => println!("{err}"),
-    }
+        Ok(prefix) => println!("{prefix}"),
+        Err(err) => {
+            println!("{err}");
+            return;
+        }
+    };
+
+    let broadcast_ip: Ipv4Addr = find_broadcast(given_ip.parse(), given_prefix.parse());
 }
 
 //Test if the ip is valid
@@ -52,21 +56,20 @@ fn parse_prefix(input: &str) -> Result<u8, String> {
     }
 }
 
-fn find_broadcast(ip: &Ipv4Addr, prefix: u8) -> Ipv4Addr {
+fn find_broadcast(ip: &Ipv4Addr, prefix: u32) -> Ipv4Addr {
 
     //Constant Values for the basic numbers
     let max_prefix: u32 = 32;
-    let status_of_bit: u32 = 2;
 
     //Try to catch special-IPs
     if ip.is_broadcast() || ip.is_unspecified() {
-        let special_ip: Ipv4Addr = *ip;
-        return special_ip;
+        return *ip;
     } 
     //Calculate the broadcast
     else {
-        let custom_bits: u32 = max_prefix - u32::from(prefix);
-        let ips_per_subnet: u32 = status_of_bit.pow(custom_bits);
-
+        let hostbits: u32 = max_prefix - u32::from(prefix);
+        let broadcast_in_bit: u32 = u32::MAX << hostbits;
+        let broadcast_ip: Ipv4Addr = std::net::Ipv4Addr::from(broadcast_in_bit);
+        return broadcast_ip; 
     }
 }
