@@ -1,7 +1,7 @@
 use std::{error, io};
 use std::net::Ipv4Addr;
 use std::str::FromStr;
-use ipnet::{IpNet, Ipv4Net};
+use ipnet::{IpNet, Ipv4Net, Ipv4Subnets};
 
 
 fn main() {
@@ -52,7 +52,21 @@ fn parse_prefix(input: &str) -> Result<u8, String> {
     }
 }
 
-fn find_broadcast(ip: &Ipv4Addr) {
-    //let broadcast = ip
+fn find_broadcast(ip: &Ipv4Addr, prefix: u8) -> Ipv4Addr {
 
+    //Constant Values for the basic numbers
+    let max_prefix: u32 = 32;
+    let status_of_bit: u32 = 2;
+
+    //Try to catch special-IPs
+    if ip.is_broadcast() || ip.is_unspecified() {
+        let special_ip: Ipv4Addr = *ip;
+        return special_ip;
+    } 
+    //Calculate the broadcast
+    else {
+        let custom_bits: u32 = max_prefix - u32::from(prefix);
+        let ips_per_subnet: u32 = status_of_bit.pow(custom_bits);
+
+    }
 }
