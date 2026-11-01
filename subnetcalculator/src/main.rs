@@ -13,7 +13,7 @@ fn main() {
         .read_line(&mut given_ip)
         .expect("Failed to read the IP");
 
-    match parse_ip(given_ip.trim()) {
+    let ip = match parse_ip(given_ip.trim()) {
         Ok(ip) => ip,
         Err(err) => {
             println!("{err}");
@@ -27,15 +27,15 @@ fn main() {
         .read_line(&mut given_prefix)
         .expect("Failed to read prefix");
 
-    match parse_prefix(given_prefix.trim()) {
-        Ok(prefix) => println!("{prefix}"),
+    let prefix = match parse_prefix(given_prefix.trim()) {
+        Ok(prefix) => prefix,
         Err(err) => {
             println!("{err}");
             return;
         }
     };
 
-    let broadcast_ip: Ipv4Addr = find_broadcast(given_ip.parse(), given_prefix.parse());
+    find_ip_data(&ip, &prefix);
 }
 
 //Test if the ip is valid
@@ -56,35 +56,41 @@ fn parse_prefix(input: &str) -> Result<u8, String> {
     }
 }
 
-fn find_ip_data(ip_as_string: &str, prefix: u32) {
-
-    let ip_address: Ipv4Addr = ip_as_string.parse();
+fn find_ip_data(ip: &Ipv4Addr, prefix: &u8) {
 
     //Constant Values for the basic numbers
-    let max_prefix: u32 = 32;
-    let custom_hostbits: u32 = max_prefix - u32::from(prefix);
-    
-    
+    let max_prefix: u8 = 32;
+    let custom_hostbits: u8 = max_prefix - prefix;
 
-    find_broadcast(ip_address, custom_hostbits);
-    find_netid(custom_hostbits);
+    //Subnetmask in bit
+    let mask_in_bit: u32 = u32::MAX << custom_hostbits;
+
+    //Subnetmask as IP
+    let subnetmask: Ipv4Addr = Ipv4Addr::from(mask_in_bit);
+    
+    let broadcast: Ipv4Addr = find_broadcast(&ip, &mask_in_bit);
+    let netid: Ipv4Addr = find_netid(&ip, &mask_in_bit);
+
+    println!("The Broadcast is: {broadcast} and the NetID is: {netid}");
 }
 
-fn find_broadcast(ip: &Ipv4Addr, hostbits: u32) -> Ipv4Addr {
+fn find_broadcast(ip: &Ipv4Addr, subnet_bit: &u32) -> Ipv4Addr {
     //Try to catch special-IPs
     if ip.is_broadcast() || ip.is_unspecified() {
         return *ip;
     } 
     //Calculate the broadcast
     else {
-        let broadcast_in_bit: u32 = u32::MAX << hostbits;
-        let broadcast_ip: Ipv4Addr = std::net::Ipv4Addr::from(broadcast_in_bit);
+        //Broadcast-IP in bit
+        let broadcast_in_bit = u32::from(*ip) | !subnet_bit;
+        let broadcast_ip: Ipv4Addr = Ipv4Addr::from(broadcast_in_bit);
         return broadcast_ip; 
     }
 }
 
-fn find_netid(hostbits: u32) -> Ipv4Addr {
-    let netid_in_bits: u32 = u32::MIN << hostbits;
-    let netid_ip: Ipv4Addr = std::net::Ipv4Addr::from(netid_in_bits);
+fn find_netid(ip: &Ipv4Addr, subnet_bit: &u32) -> Ipv4Addr {
+    //NetID-IP in Bit
+    let netid: u32 = u32::from(*ip) & subnet_bit;
+    let netid_ip: Ipv4Addr = Ipv4Addr::from(netid);
     return netid_ip;
 }
