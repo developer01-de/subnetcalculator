@@ -60,10 +60,14 @@ fn find_ip_data(ip: &Ipv4Addr, prefix: &u8) {
 
     //Constant Values for the basic numbers
     let max_prefix: u8 = 32;
-    let custom_hostbits: u8 = max_prefix - prefix;
+    let custom_hostbits: u32 = u32::from(max_prefix - prefix);
 
     //Subnetmask in bit
-    let mask_in_bit: u32 = u32::MAX << custom_hostbits;
+    let mask_in_bit: u32 = if custom_hostbits == 32 {
+        0
+    } else {
+        u32::MAX << custom_hostbits
+    };
 
     //Subnetmask as IP
     let subnetmask: Ipv4Addr = Ipv4Addr::from(mask_in_bit);
@@ -83,6 +87,8 @@ fn find_broadcast(ip: &Ipv4Addr, subnet_bit: &u32) -> Ipv4Addr {
     else {
         //Broadcast-IP in bit
         let broadcast_in_bit = u32::from(*ip) | !subnet_bit;
+
+        //Broadcast as IP
         let broadcast_ip: Ipv4Addr = Ipv4Addr::from(broadcast_in_bit);
         return broadcast_ip; 
     }
@@ -91,6 +97,8 @@ fn find_broadcast(ip: &Ipv4Addr, subnet_bit: &u32) -> Ipv4Addr {
 fn find_netid(ip: &Ipv4Addr, subnet_bit: &u32) -> Ipv4Addr {
     //NetID-IP in Bit
     let netid: u32 = u32::from(*ip) & subnet_bit;
+
+    //NetID-IP as IP
     let netid_ip: Ipv4Addr = Ipv4Addr::from(netid);
     return netid_ip;
 }
