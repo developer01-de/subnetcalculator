@@ -1,18 +1,14 @@
-use std::io;
 use std::net::Ipv4Addr;
-use std::str::FromStr;
-use clap::Parser;
-use clap::value_parser;
+use clap::{Parser, value_parser};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
-
 struct Args {
     ///IP-Adress of subnet
     #[arg(short, long)]
     ip: Ipv4Addr,
 
-    ///Prefix of Subnetmask
+    ///Prefix of subnetmask
     #[arg(short, long, value_parser = value_parser!(u32).range(0..=32),
     default_value_t = 24)]
     prefix: u32,
@@ -22,18 +18,14 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let mut given_ip = args.ip;
-    let mut given_prefix = args.prefix;
-
     find_ip_data(&args.ip, &args.prefix);
 }
-
 
 fn find_ip_data(ip: &Ipv4Addr, prefix: &u32) {
 
     //Constant Values for the basic numbers
     let max_prefix: u32 = 32;
-    let custom_hostbits: u32 = u32::from(max_prefix - prefix);
+    let custom_hostbits: u32 = max_prefix - prefix;
 
     //Subnetmask in bit
     let mask_in_bit: u32 = if custom_hostbits == 32 {
