@@ -1,65 +1,38 @@
 use std::io;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
+use clap::Parser;
+use clap::value_parser;
+
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+
+struct Args {
+    ///IP-Adress of subnet
+    #[arg(short, long)]
+    ip: Ipv4Addr,
+
+    ///Prefix of Subnetmask
+    #[arg(short, long, value_parser = value_parser!(u32).range(0..=32),
+    default_value_t = 24)]
+    prefix: u32,
+}
 
 
 fn main() {
-    println!("Type some IP here:");
+    let args = Args::parse();
 
-    let mut given_ip = String::new();
-    let mut given_prefix = String::new();
+    let mut given_ip = args.ip;
+    let mut given_prefix = args.prefix;
 
-    io::stdin()
-        .read_line(&mut given_ip)
-        .expect("Failed to read the IP");
-
-    let ip = match parse_ip(given_ip.trim()) {
-        Ok(ip) => ip,
-        Err(err) => {
-            println!("{err}");
-            return;
-        }
-    };
-
-
-    println!("Type some prefix here:");
-    io::stdin()
-        .read_line(&mut given_prefix)
-        .expect("Failed to read prefix");
-
-    let prefix = match parse_prefix(given_prefix.trim()) {
-        Ok(prefix) => prefix,
-        Err(err) => {
-            println!("{err}");
-            return;
-        }
-    };
-
-    find_ip_data(&ip, &prefix);
+    find_ip_data(&args.ip, &args.prefix);
 }
 
-//Test if the ip is valid
-fn parse_ip(input: &str) -> Result<Ipv4Addr, std::net::AddrParseError> {
-    Ipv4Addr::from_str(input)
-}
 
-//Test if the subnetmask is valid
-fn parse_prefix(input: &str) -> Result<u8, String> {
-    let prefix = input
-        .parse::<u8>()
-        .map_err(|err| err.to_string())?;
-
-    if prefix <= 32 {
-        Ok(prefix)
-    } else {
-        Err("The prefix has to be smaller than 32".to_string())
-    }
-}
-
-fn find_ip_data(ip: &Ipv4Addr, prefix: &u8) {
+fn find_ip_data(ip: &Ipv4Addr, prefix: &u32) {
 
     //Constant Values for the basic numbers
-    let max_prefix: u8 = 32;
+    let max_prefix: u32 = 32;
     let custom_hostbits: u32 = u32::from(max_prefix - prefix);
 
     //Subnetmask in bit
