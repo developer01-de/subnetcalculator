@@ -75,6 +75,7 @@ fn find_ip_data(ip: &Ipv4Addr, prefix: &u8) {
     let broadcast: Ipv4Addr = find_broadcast(&ip, &mask_in_bit);
     let netid: Ipv4Addr = find_netid(&ip, &mask_in_bit);
 
+    println!("The subnetmask is: {subnetmask}");
     println!("The Broadcast is: {broadcast} and the NetID is: {netid}");
 }
 
