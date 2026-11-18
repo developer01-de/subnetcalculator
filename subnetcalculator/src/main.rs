@@ -4,7 +4,7 @@ use clap::{Parser, value_parser};
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    ///IP-Adress of subnet
+    ///IP Adress of subnet
     #[arg(short, long)]
     ip: Ipv4Addr,
 
@@ -45,19 +45,13 @@ fn find_ip_data(ip: &Ipv4Addr, prefix: &u32) {
 }
 
 fn find_broadcast(ip: &Ipv4Addr, subnet_bit: &u32) -> Ipv4Addr {
-    //Try to catch special-IPs
-    if ip.is_broadcast() || ip.is_unspecified() {
-        return *ip;
-    } 
     //Calculate the broadcast
-    else {
-        //Broadcast-IP in bit
-        let broadcast_in_bit = u32::from(*ip) | !subnet_bit;
+    //Broadcast-IP in bit
+    let broadcast_in_bit = u32::from(*ip) | !subnet_bit;
 
-        //Broadcast as IP
-        let broadcast_ip: Ipv4Addr = Ipv4Addr::from(broadcast_in_bit);
-        return broadcast_ip; 
-    }
+    //Broadcast as IP
+    let broadcast_ip: Ipv4Addr = Ipv4Addr::from(broadcast_in_bit);
+    return broadcast_ip; 
 }
 
 fn find_netid(ip: &Ipv4Addr, subnet_bit: &u32) -> Ipv4Addr {
